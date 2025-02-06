@@ -106,3 +106,13 @@ providersRouter.post('/test', async (req: Request, res: Response): Promise<void>
     return;
   }
 });
+
+providersRouter.get('/models', async (req: Request, res: Response): Promise<void> => {
+  const apiUrl = 'http://ollama:11434/api/tags';
+  try {
+    const modelConfigs = await getModelConfigs(apiUrl);
+    res.json(modelConfigs);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch model configurations' });
+  }
+});

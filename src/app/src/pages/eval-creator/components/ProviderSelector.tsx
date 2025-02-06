@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
@@ -9,6 +9,7 @@ import type { ProviderOptions } from '@promptfoo/types';
 import { useProvidersStore } from '../../../store/providersStore';
 import AddLocalProviderDialog from './AddLocalProviderDialog';
 import ProviderConfigDialog from './ProviderConfigDialog';
+import { getModelConfigs } from '@app/utils/api';
 
 const defaultProviders: ProviderOptions[] = ([] as (ProviderOptions & { id: string })[])
   .concat(
@@ -194,6 +195,16 @@ const ProviderSelector: React.FC<ProviderSelectorProps> = ({ providers, onChange
   const { customProviders, addCustomProvider } = useProvidersStore();
   const [selectedProvider, setSelectedProvider] = React.useState<ProviderOptions | null>(null);
   const [isAddLocalDialogOpen, setIsAddLocalDialogOpen] = React.useState(false);
+  const [ollamaModels, setOllamaModels] = useState<ProviderOptions[]>([]);
+
+  useEffect(() => {
+    const fetchOllamaModels = async () => {
+      const models = await getModelConfigs('/api/models');
+      setOllamaModels(models);
+    };
+
+    fetchOllamaModels();
+  }, []);
 
   const handleAddLocalProvider = (provider: ProviderOptions) => {
     addCustomProvider(provider);
@@ -201,8 +212,8 @@ const ProviderSelector: React.FC<ProviderSelectorProps> = ({ providers, onChange
   };
 
   const allProviders = React.useMemo(() => {
-    return [...defaultProviders, ...customProviders];
-  }, [customProviders]);
+    return [...defaultProviders, ...customProviders, ...ollamaModels];
+  }, [customProviders, ollamaModels]);
 
   const handleProviderClick = (provider: ProviderOptions | string) => {
     setSelectedProvider(typeof provider === 'string' ? { id: provider } : provider);
